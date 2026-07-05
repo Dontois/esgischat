@@ -1,12 +1,16 @@
 <?php
 if (!defined('SPA_MODE')) {
-    header('Location: ../../index.html#/accueil');
-    exit;
+  header('Location: ../../index.html#/accueil');
+  exit;
 }
+
+// Garantit la présence des variables attendues (évite les notices et erreurs d'analyse statique)
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+$page_actuelle = $page_actuelle ?? 'accueil';
 
 require_once __DIR__ . '/../../inclure/publications.php';
 
-$uid = (int)$utilisateur['id'];
+$uid = (int)($utilisateur['id'] ?? 0);
 [$publications, $commentaires_par_pub] = charger_publications_flux($bdd, $uid, $utilisateur);
 ?>
 

@@ -1,10 +1,15 @@
 <?php
+$uid = null;
 if (!defined('SPA_MODE')) {
-    header('Location: ../../index.html#/chat');
-    exit;
+  header('Location: ../../index.html#/chat');
+  exit;
 }
 
-$uid = (int)$utilisateur['id'];
+// Variables attendues mais parfois non définies lors de l'analyse statique
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+$page_actuelle = $page_actuelle ?? 'chat';
+
+$uid = (int)($utilisateur['id'] ?? 0);
 $avec = (int)($_GET['avec'] ?? 0);
 
 $req = $bdd->prepare("

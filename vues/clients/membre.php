@@ -1,10 +1,14 @@
 <?php
 if (!defined('SPA_MODE')) {
-    header('Location: ../../index.html#/amis');
-    exit;
+  header('Location: ../../index.html#/amis');
+  exit;
 }
 
-$uid = (int)$utilisateur['id'];
+// Défauts pour l'analyse statique / sécurité
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+$page_actuelle = $page_actuelle ?? 'membre';
+
+$uid = (int)($utilisateur['id'] ?? 0);
 $membre_id = (int)($membre_id ?? $_GET['id'] ?? 0);
 
 $req = $bdd->prepare("SELECT id, nom, prenom, email, photo_profil, bio, date_creation FROM utilisateurs WHERE id = :id AND role = 'user'");

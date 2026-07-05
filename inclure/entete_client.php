@@ -1,6 +1,17 @@
 <?php
 // Ce fichier affiche le haut de la page : topbar + sidebar gauche.
 // Variables attendues avant l'include : $titre_page, $page_actuelle, $utilisateur
+
+// Définitions par défaut pour éviter les notices et les faux positifs de l'analyse statique
+$titre_page = $titre_page ?? '';
+$page_actuelle = $page_actuelle ?? '';
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+
+// Initiales pour l'avatar (sécurisé)
+$initiales = '';
+if (!empty($utilisateur['prenom'])) {
+  $initiales = mb_substr($utilisateur['prenom'], 0, 1) . mb_substr($utilisateur['nom'] ?? '', 0, 1);
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -32,7 +43,7 @@
         <?php if (!empty($utilisateur['photo_profil'])): ?>
           <img src="../../uploads/avatars/<?= e($utilisateur['photo_profil'] ?? '') ?>" class="avatar avatar-sm" alt="">
         <?php else: ?>
-          <div class="avatar avatar-sm"><?= e(($utilisateur['prenom'] ?? '') !== '' ? mb_substr($utilisateur['prenom'], 0, 1) . mb_substr($utilisateur['nom'] ?? '', 0, 1) : '') ?></div>
+          <div class="avatar avatar-sm"><?= e($initiales) ?></div>
         <?php endif; ?>
         <span class="topbar-profil-nom"><?= e($utilisateur['prenom'] ?? '') ?></span>
       </a>

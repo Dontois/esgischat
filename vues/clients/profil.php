@@ -1,10 +1,14 @@
 <?php
 if (!defined('SPA_MODE')) {
-    header('Location: ../../index.html#/profil');
-    exit;
+  header('Location: ../../index.html#/profil');
+  exit;
 }
 
-$uid = (int)$utilisateur['id'];
+// Défauts pour l'analyse statique / sécurité
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+$page_actuelle = $page_actuelle ?? 'profil';
+
+$uid = (int)($utilisateur['id'] ?? 0);
 
 $req = $bdd->prepare("SELECT * FROM utilisateurs WHERE id = :id");
 $req->execute(['id' => $uid]);
