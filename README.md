@@ -64,8 +64,7 @@ post_max_size = 15M
 
 
 ## Liste des membres du groupe
-- Alice Dupont
-- Bruno Martin
-- Claire Leroy
-- David Petit
+- OKANLAWON Dontoi's
+
+
 
