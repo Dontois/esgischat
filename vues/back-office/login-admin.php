@@ -3,6 +3,10 @@ require_once __DIR__ . '/../../inclure/config.php';
 require_once __DIR__ . '/../../inclure/fonctions.php';
 demarrer_session();
 
+function est_requete_ajax() {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
 if (!empty($_SESSION['admin'])) {
     header('Location: dashboard.php');
     exit;
@@ -23,7 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         unset($utilisateur['mot_de_passe']);
         $_SESSION['admin'] = $utilisateur;
+        if (est_requete_ajax()) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['success' => true, 'message' => 'Connexion réussie.', 'redirect' => 'dashboard.php']);
+            exit;
+        }
         header('Location: dashboard.php');
+        exit;
+    }
+
+    if (est_requete_ajax()) {
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode(['success' => false, 'message' => $erreur]);
         exit;
     }
 }
@@ -43,11 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="admin-login-logo">ESGIS<span>chat</span></div>
     <div class="admin-login-sub">Portail d'administration</div>
 
-    <?php if ($erreur): ?>
-      <div class="toast erreur" style="position:static;margin-bottom:16px"><?= e($erreur) ?></div>
-    <?php endif; ?>
+    <div id="admin-login-message">
+      <?php if ($erreur): ?>
+        <div class="toast erreur" style="position:static;margin-bottom:16px"><?= e($erreur) ?></div>
+      <?php endif; ?>
+    </div>
 
-    <form method="post">
+    <form method="post" id="admin-login-form">
       <div class="groupe-champ">
         <label class="champ-label">EMAIL</label>
         <input type="email" name="email" class="champ" placeholder="admin@reseau.com" required>
@@ -63,5 +80,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </p>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('admin-login-form');
+  const messageBox = document.getElementById('admin-login-message');
+  if (!form || !messageBox) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const response = await fetch(window.location.href, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData,
+    });
+    const data = await response.json().catch(() => null);
+    if (data?.success) {
+      window.location.href = data.redirect || 'dashboard.php';
+      return;
+    }
+    messageBox.innerHTML = `<div class="toast erreur" style="position:static;margin-bottom:16px">${data?.message || 'Erreur de connexion.'}</div>`;
+  });
+});
+</script>
 </body>
 </html>

@@ -1,14 +1,12 @@
 <?php
-// Fonctions utilitaires utilisées dans tout le site
 
-// Démarre la session si elle n'est pas déjà démarrée
 function demarrer_session() {
     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
 }
 
-// Echappe le texte avant de l'afficher (sécurité contre le code HTML/JS malveillant)
+
 function e($texte) {
     return htmlspecialchars($texte ?? '', ENT_QUOTES, 'UTF-8');
 }
@@ -16,18 +14,6 @@ function e($texte) {
 // Vérifie qu'un email est valide
 function email_valide($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-}
-
-// Bloque la page si l'utilisateur n'est pas connecté (côté client normal)
-// Remarque : cette fonction est appelée depuis vues/clients/*.php (2 niveaux sous la racine),
-// donc "../../index.php" pointe toujours vers la racine du projet, peu importe son emplacement.
-function verifier_connexion() {
-    demarrer_session();
-    if (empty($_SESSION['utilisateur'])) {
-        header('Location: ../../index.php');
-        exit;
-    }
-    return $_SESSION['utilisateur'];
 }
 
 // Bloque la page si l'utilisateur n'est pas modérateur/admin
@@ -61,13 +47,7 @@ function afficher_flash() {
     }
 }
 
-// Gère l'upload d'une image (photo de profil, publication ou message)
-// Retourne le nom du fichier enregistré, ou null si pas d'image fournie ou erreur.
-// $erreur (par référence) est rempli avec un message explicite si l'upload
-// a été TENTÉ mais a échoué, afin que l'appelant puisse prévenir l'utilisateur
-// au lieu d'échouer silencieusement (c'était le bug : une image trop lourde
-// disparaissait sans aucun message, et côté chat le message n'était même pas
-// envoyé bien que l'API réponde "succès").
+
 function traiter_image($fichier, $dossier, &$erreur = null) {
     $erreur = null;
 
@@ -155,11 +135,6 @@ function generer_api_token() {
     return bin2hex(random_bytes(32));
 }
 
-// Authentification API via sessionStorage (header X-Auth-Token envoyé par le JS).
-// IMPORTANT : on ne fait JAMAIS confiance à un identifiant envoyé par le client
-// (comme un ancien header "X-User-Id" qui pourrait être falsifié depuis les
-// DevTools). On vérifie un jeton secret généré côté serveur à la connexion et
-// stocké en base, associé à un seul utilisateur.
 function utilisateur_depuis_entete() {
     global $bdd;
     $token = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';

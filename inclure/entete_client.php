@@ -1,20 +1,18 @@
 <?php
-// Ce fichier affiche le haut de la page : topbar + sidebar gauche.
-// Variables attendues avant l'include : $titre_page, $page_actuelle, $utilisateur
 
-// Définitions par défaut pour éviter les notices et les faux positifs de l'analyse statique
 $titre_page = $titre_page ?? '';
 $page_actuelle = $page_actuelle ?? '';
 $utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? []);
 
-// Initiales pour l'avatar (sécurisé)
 $initiales = '';
-// Coerce les champs en string avant d'appeler mb_substr pour satisfaire l'analyseur de type
+
 $prenom = (string)($utilisateur['prenom'] ?? '');
 $nom = (string)($utilisateur['nom'] ?? '');
+
 if ($prenom !== '') {
   $initiales = mb_substr($prenom, 0, 1) . mb_substr($nom, 0, 1);
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">

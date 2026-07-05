@@ -1,67 +1,61 @@
-
 ## Description du projet
-ESGISchat est un réseau social interne destiné à un usage étudiant. Il propose :
+ESGISchat est un réseau social interne destiné aux étudiants. Le projet propose :
 - une inscription et une connexion sécurisées,
-- un fil de publications avec likes/dislikes et commentaires,
-- un système d'amis (envoi, acceptation, refus),
-- une messagerie privée entre utilisateurs,
+- un fil d’actualités avec publications, likes/dislikes et commentaires,
+- un système d’amis (envoi, acceptation, refus),
+- un module de messagerie privé avec conversations en temps réel,
 - un espace profil pour modifier ses informations et son mot de passe,
-- un back-office pour la modération et l'administration.
+- un back-office de modération et d’administration.
 
 ## Mode de fonctionnement
-Le projet fonctionne en mode semi-SPA pour la partie utilisateur :
-- les vues sont chargées via `api/spa.php`.
-- les actions utilisent des formulaires POST et rechargent la page.
-- l'authentification utilisateur passe par un token stocké en base (`api_token`).
-- les pages admin et client sont séparées : le back-office est accessible via `vues/back-office/login-admin.php`.
-- les uploads d'images sont validés côté serveur et stockés dans `uploads/`.
+Le projet fonctionne en mode SPA-like avec un chargement initial via la page d’entrée [index.html](index.html), puis des échanges en JavaScript via Fetch pour la plupart des actions utilisateur.
+- la partie client charge les vues via [api/spa.php](api/spa.php),
+- l’authentification repose sur un token stocké côté navigateur avec sessionStorage,
+- les uploads d’images sont validés côté serveur et stockés dans [uploads](uploads),
+- le back-office est accessible via [vues/back-office/login-admin.php](vues/back-office/login-admin.php), avec des rôles `user`, `moderateur` et `admin`.
 
-### Organisation du projet
-- `index.php` : page de connexion et d'inscription utilisateur.
-- `deconnexion.php` : déconnexion.
-- `inclure/` : configuration de la base et fonctions utilitaires.
-- `api/` : endpoints pour l'authentification, le feed, le chat, les amis et le profil.
-- `vues/clients/` : pages utilisateur.
-- `vues/back-office/` : portail admin/modérateur.
-- `assets/css/style.css` : styles principaux.
-- `uploads/` : images uploadées.
+## Structure du projet
+- [index.html](index.html) : page d’entrée du front office.
+- [api](api) : endpoints PHP pour l’authentification, le flux, les amis, le chat et le profil.
+- [assets](assets) : CSS et JavaScript.
+- [vues/clients](vues/clients) : pages du client.
+- [vues/back-office](vues/back-office) : portail d’administration.
+- [inclure](inclure) : configuration et fonctions utilitaires.
+- [uploads](uploads) : fichiers uploadés.
 
 ## Identifiants de test
 | Rôle | Email | Mot de passe |
 |------|-------|--------------|
-| Admin | admin@reseau.com | password123 |
+| Administrateur | admin@reseau.com | password123 |
 | Modérateur | marie@reseau.com | password123 |
 | Utilisateur | lucas@reseau.com | password123 |
 
 ## Accès au back-office
-- URL admin : `http://localhost/esgi_new/vues/back-office/login-admin.php`
-- Seuls les comptes `moderateur` et `admin` peuvent se connecter.
+- URL admin : http://localhost/esgi_new/vues/back-office/login-admin.php
+- Seuls les comptes `moderateur` et `admin` peuvent s’authentifier.
 - Un compte `user` ne doit pas accéder au portail admin.
-
-
-> Remplacez cette liste par les noms réels de votre groupe avant livraison.
 
 ## Installation
 1. Copier le dossier `esgi_new` dans `htdocs` de XAMPP.
-2. Importer `database.sql` dans phpMyAdmin.
-3. Vérifier les paramètres de connexion MySQL dans `inclure/config.php`.
-4. Ouvrir `http://localhost/esgi_new/index.php`.
+2. Importer le fichier SQL fourni dans phpMyAdmin.
+3. Vérifier les paramètres de connexion MySQL dans [inclure/config.php](inclure/config.php).
+4. Ouvrir http://localhost/esgi_new/index.html.
 
-## Uploads d'images
+## Uploads d’images
 - Formats acceptés : JPG, PNG, GIF, WEBP, BMP, HEIC.
 - Taille maximale : 12 Mo.
-- Si le serveur refuse encore l'upload, vérifiez et augmentez dans `php.ini` :
+- Si l’upload est refusé, vérifier les réglages PHP dans `php.ini` :
 ```ini
 upload_max_filesize = 12M
 post_max_size = 15M
 ```
 
 ## Choix techniques
-- Pas de `fetch`/`async`/AJAX : les actions sont gérées par des formulaires HTML classiques.
-- Pas de bibliothèque externe : le projet utilise PHP, HTML, CSS et JS natif.
-- Le back-office est protégé par un système de rôle (`user`, `moderateur`, `admin`).
-- Les erreurs d'authentification ne doivent pas révéler si un compte existe ou non.
-
+- Frontend : HTML, CSS et JavaScript natif.
+- Backend : PHP natif pour l’API et les vues.
+- Communication asynchrone : Fetch/AJAX pour les interactions principales sans rechargement complet de la page après le chargement initial.
+- Base de données : MySQL.
+- Sécurité : mots de passe hashés, validation côté serveur, rôles utilisateur/admin/modérateur.
 
 ## Liste des membres du groupe
 - ALLOHOU Mirabelle

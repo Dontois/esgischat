@@ -3,6 +3,10 @@ require_once __DIR__ . '/../../inclure/config.php';
 require_once __DIR__ . '/../../inclure/fonctions.php';
 demarrer_session();
 
+function est_requete_ajax() {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
 $erreur  = '';
 $succes  = '';
 $token   = $_GET['token'] ?? $_POST['token'] ?? '';
@@ -28,6 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $succes = "Mot de passe modifié avec succès ! Vous pouvez vous connecter.";
         $token_valide = false;
     }
+
+    if (est_requete_ajax()) {
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode(['success' => $succes !== '', 'message' => $succes ?: $erreur]);
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -50,12 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="carte-corps">
         <h2 style="font-size:20px;margin-bottom:16px">Nouveau mot de passe</h2>
 
-        <?php if ($erreur): ?>
-          <div class="toast erreur" style="position:static;margin-bottom:16px"><?= e($erreur) ?></div>
-        <?php endif; ?>
-        <?php if ($succes): ?>
-          <div class="toast succes" style="position:static;margin-bottom:16px"><?= e($succes) ?></div>
-        <?php endif; ?>
+        <div id="reset-message">
+          <?php if ($erreur): ?>
+            <div class="toast erreur" style="position:static;margin-bottom:16px"><?= e($erreur) ?></div>
+          <?php endif; ?>
+          <?php if ($succes): ?>
+            <div class="toast succes" style="position:static;margin-bottom:16px"><?= e($succes) ?></div>
+          <?php endif; ?>
+        </div>
 
         <?php if ($token_valide && !$succes): ?>
           <form method="post">
@@ -79,5 +91,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  const messageBox = document.getElementById('reset-message');
+  if (!form || !messageBox) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const response = await fetch(window.location.href, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData,
+    });
+    const data = await response.json().catch(() => null);
+    if (messageBox) {
+      const type = data?.success ? 'succes' : 'erreur';
+      messageBox.innerHTML = `<div class="toast ${type}" style="position:static;margin-bottom:16px">${data?.message || 'Erreur.'}</div>`;
+    }
+  });
+});
+</script>
 </body>
 </html>

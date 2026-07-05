@@ -4,23 +4,26 @@ require_once __DIR__ . '/../../inclure/fonctions.php';
 demarrer_session();
 $admin = verifier_connexion_admin('moderateur');
 
-// -----------------------------------------------
+function est_requete_ajax() {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
 // Traitement des actions de modération
-// -----------------------------------------------
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    $json = null;
 
     if ($action === 'supprimer_publication') {
         $id = intval($_POST['id'] ?? 0);
         $bdd->prepare("DELETE FROM publications WHERE id = :id")->execute(['id' => $id]);
-        message_flash("Publication supprimée.");
+        $json = ['success' => true, 'action' => 'supprimer_publication', 'message' => 'Publication supprimée.'];
     }
 
     if ($action === 'supprimer_utilisateur') {
         $id = intval($_POST['id'] ?? 0);
-        // Sécurité : on ne supprime jamais un compte admin/modérateur par ce bouton
         $bdd->prepare("DELETE FROM utilisateurs WHERE id = :id AND role = 'user'")->execute(['id' => $id]);
-        message_flash("Utilisateur supprimé.");
+        $json = ['success' => true, 'action' => 'supprimer_utilisateur', 'message' => 'Utilisateur supprimé.'];
     }
 
     if ($action === 'ajouter_staff' && $admin['role'] === 'admin') {
@@ -31,17 +34,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mdp    = $_POST['mot_de_passe'] ?? '';
 
         if (!$email || !in_array($role, ['moderateur', 'admin']) || strlen($mdp) < 8) {
-            message_flash("Champs invalides (email, rôle et mot de passe de 8 caractères minimum requis).", 'erreur');
+            $json = ['success' => false, 'message' => 'Champs invalides (email, rôle et mot de passe de 8 caractères minimum requis).'];
         } else {
             $req = $bdd->prepare("SELECT id FROM utilisateurs WHERE email = :email");
             $req->execute(['email' => $email]);
             if ($req->fetch()) {
-                message_flash("Cet email est déjà utilisé.", 'erreur');
+                $json = ['success' => false, 'message' => 'Cet email est déjà utilisé.'];
             } else {
                 $hash = password_hash($mdp, PASSWORD_DEFAULT);
                 $bdd->prepare("INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role) VALUES (:nom, :prenom, :email, :mdp, :role)")
                     ->execute(['nom' => strip_tags($nom), 'prenom' => strip_tags($prenom), 'email' => $email, 'mdp' => $hash, 'role' => $role]);
-                message_flash("Compte $role créé avec succès.");
+                $id = (int)$bdd->lastInsertId();
+                $staff = $bdd->prepare("SELECT id, nom, prenom, email, role FROM utilisateurs WHERE id = :id")->execute(['id' => $id]);
+                $staff = $bdd->prepare("SELECT id, nom, prenom, email, role FROM utilisateurs WHERE id = :id");
+                $staff->execute(['id' => $id]);
+                $staff_user = $staff->fetch();
+                $row_html = '<tr><td>' . e($staff_user['prenom'] . ' ' . $staff_user['nom']) . '</td><td>' . e($staff_user['email']) . '</td><td>' . e($staff_user['role']) . '</td><td><span style="color:var(--texte-3);font-size:12px">Modifiable</span></td></tr>';
+                $json = ['success' => true, 'action' => 'ajouter_staff', 'message' => "Compte $role créé avec succès.", 'row_html' => $row_html];
             }
         }
     }
@@ -51,7 +60,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nouveau_role = $_POST['role'] ?? '';
         if ($id && in_array($nouveau_role, ['user', 'moderateur', 'admin'])) {
             $bdd->prepare("UPDATE utilisateurs SET role = :role WHERE id = :id")->execute(['role' => $nouveau_role, 'id' => $id]);
-            message_flash("Rôle mis à jour.");
+            $json = ['success' => true, 'action' => 'changer_role', 'message' => 'Rôle mis à jour.', 'new_role' => $nouveau_role, 'new_label' => $nouveau_role === 'admin' ? 'Rétrograder en modérateur' : 'Promouvoir admin'];
+        } else {
+            $json = ['success' => false, 'message' => 'Rôle invalide.'];
+        }
+    }
+
+    if ($json !== null) {
+        if (est_requete_ajax()) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($json);
+            exit;
+        }
+
+        if ($json['success']) {
+            message_flash($json['message']);
+        } else {
+            message_flash($json['message'], 'erreur');
         }
     }
 
@@ -103,7 +128,9 @@ $section = $_GET['section'] ?? 'dashboard';
   </aside>
 
   <div class="admin-contenu">
-    <?php afficher_flash(); ?>
+    <div id="admin-flash">
+      <?php afficher_flash(); ?>
+    </div>
 
     <?php if ($section === 'dashboard'): ?>
       <?php
@@ -175,7 +202,7 @@ $section = $_GET['section'] ?? 'dashboard';
                 <td><?= e(date('d/m/Y', strtotime($u['date_creation']))) ?></td>
                 <td>
                   <?php if ($u['role'] === 'user'): ?>
-                    <form method="post" onsubmit="return confirm('Supprimer définitivement ce compte ?');">
+                    <form method="post" data-admin-form data-admin-action="supprimer_utilisateur" onsubmit="return confirm('Supprimer définitivement ce compte ?');">
                       <input type="hidden" name="action" value="supprimer_utilisateur">
                       <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                       <input type="hidden" name="retour_section" value="utilisateurs">
@@ -224,7 +251,7 @@ $section = $_GET['section'] ?? 'dashboard';
                 <td><?= (int)$p['nb_commentaires'] ?></td>
                 <td><?= e(date('d/m/Y', strtotime($p['date_creation']))) ?></td>
                 <td>
-                  <form method="post" onsubmit="return confirm('Supprimer cette publication ?');">
+                  <form method="post" data-admin-form data-admin-action="supprimer_publication" onsubmit="return confirm('Supprimer cette publication ?');">
                     <input type="hidden" name="action" value="supprimer_publication">
                     <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
                     <input type="hidden" name="retour_section" value="publications">
@@ -247,7 +274,7 @@ $section = $_GET['section'] ?? 'dashboard';
       <div class="carte" style="margin-bottom:20px">
         <div class="carte-corps">
           <h3 style="margin-bottom:12px">Ajouter un membre</h3>
-          <form method="post">
+          <form method="post" data-admin-form data-admin-action="ajouter_staff">
             <input type="hidden" name="action" value="ajouter_staff">
             <input type="hidden" name="retour_section" value="staff">
             <div class="grille-2">
@@ -291,7 +318,7 @@ $section = $_GET['section'] ?? 'dashboard';
                 <td><?= e($s['role']) ?></td>
                 <td>
                   <?php if ($s['id'] != $admin['id']): ?>
-                    <form method="post" style="display:inline">
+                    <form method="post" data-admin-form data-admin-action="changer_role" style="display:inline">
                       <input type="hidden" name="action" value="changer_role">
                       <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
                       <input type="hidden" name="retour_section" value="staff">
@@ -312,5 +339,52 @@ $section = $_GET['section'] ?? 'dashboard';
     <?php endif; ?>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const flashBox = document.getElementById('admin-flash');
+  const showFlash = (message, type = 'succes') => {
+    if (!flashBox) return;
+    flashBox.innerHTML = `<div class="toast ${type}" style="position:static;margin-bottom:16px">${message}</div>`;
+  };
+
+  document.querySelectorAll('form[data-admin-form]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const response = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData,
+      });
+      const data = await response.json().catch(() => null);
+      if (!data?.success) {
+        showFlash(data?.message || 'Erreur.', 'erreur');
+        return;
+      }
+
+      showFlash(data.message || 'Action effectuée.');
+      if (data.action === 'supprimer_publication' || data.action === 'supprimer_utilisateur') {
+        form.closest('tr')?.remove();
+      }
+
+      if (data.action === 'ajouter_staff' && data.row_html) {
+        const tbody = document.getElementById('staff-table-body');
+        if (tbody) {
+          tbody.insertAdjacentHTML('beforeend', data.row_html);
+          form.reset();
+        }
+      }
+
+      if (data.action === 'changer_role') {
+        const row = form.closest('tr');
+        const roleCell = row?.querySelector('td:nth-child(3)');
+        const button = form.querySelector('button[type="submit"]');
+        if (roleCell) roleCell.textContent = data.new_role || roleCell.textContent;
+        if (button) button.textContent = data.new_label || button.textContent;
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>

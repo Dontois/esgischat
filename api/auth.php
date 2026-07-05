@@ -99,31 +99,29 @@ if ($action === 'register') {
 if ($action === 'forgot') {
     $email = trim($_POST['email'] ?? '');
 
-    if (!email_valide($email)) {
-        reponse_json_api(false, ['message' => 'Adresse email invalide.']);
-    }
-
-    $req = $bdd->prepare("SELECT id, prenom FROM utilisateurs WHERE email = :email AND role = 'user'");
-    $req->execute(['email' => $email]);
-    $utilisateur = $req->fetch();
-
     $lien_test = null;
-    if ($utilisateur) {
-        $token = bin2hex(random_bytes(16));
-        $expire = date('Y-m-d H:i:s', time() + 3600);
-        $bdd->prepare("UPDATE utilisateurs SET reset_token = :token, reset_expire = :expire WHERE id = :id")
-            ->execute(['token' => $token, 'expire' => $expire, 'id' => $utilisateur['id']]);
+    if ($email !== '' && email_valide($email)) {
+        $req = $bdd->prepare("SELECT id, prenom FROM utilisateurs WHERE email = :email AND role = 'user'");
+        $req->execute(['email' => $email]);
+        $utilisateur = $req->fetch();
 
-        $lien = 'index.html#/reset?token=' . $token;
-        $html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#0d0f1a;color:#e8eaf6;border-radius:16px">';
-        $html .= '<h2 style="margin:0 0 12px">Réinitialisation de mot de passe</h2>';
-        $html .= '<p>Bonjour ' . e($utilisateur['prenom']) . ',</p>';
-        $html .= '<p>Vous avez demandé à réinitialiser votre mot de passe ESGISchat.</p>';
-        $html .= '<p><a href="' . e($lien) . '" style="display:inline-block;padding:12px 18px;background:#7c6ef5;color:#fff;text-decoration:none;border-radius:10px">Réinitialiser mon mot de passe</a></p>';
-        $html .= '<p style="font-size:12px;color:#9aa0b8">Ce lien expire dans 1 heure.</p>';
-        $html .= '</div>';
-        envoyer_email_html($email, 'Réinitialisation de mot de passe ESGISchat', $html);
-        $lien_test = $lien;
+        if ($utilisateur) {
+            $token = bin2hex(random_bytes(16));
+            $expire = date('Y-m-d H:i:s', time() + 3600);
+            $bdd->prepare("UPDATE utilisateurs SET reset_token = :token, reset_expire = :expire WHERE id = :id")
+                ->execute(['token' => $token, 'expire' => $expire, 'id' => $utilisateur['id']]);
+
+            $lien = 'index.html#/reset?token=' . $token;
+            $html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#0d0f1a;color:#e8eaf6;border-radius:16px">';
+            $html .= '<h2 style="margin:0 0 12px">Réinitialisation de mot de passe</h2>';
+            $html .= '<p>Bonjour ' . e($utilisateur['prenom']) . ',</p>';
+            $html .= '<p>Vous avez demandé à réinitialiser votre mot de passe ESGISchat.</p>';
+            $html .= '<p><a href="' . e($lien) . '" style="display:inline-block;padding:12px 18px;background:#7c6ef5;color:#fff;text-decoration:none;border-radius:10px">Réinitialiser mon mot de passe</a></p>';
+            $html .= '<p style="font-size:12px;color:#9aa0b8">Ce lien expire dans 1 heure.</p>';
+            $html .= '</div>';
+            envoyer_email_html($email, 'Réinitialisation de mot de passe ESGISchat', $html);
+            $lien_test = $lien;
+        }
     }
 
     reponse_json_api(true, [
