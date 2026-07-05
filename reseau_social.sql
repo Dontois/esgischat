@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : dim. 05 juil. 2026 à 03:36
+-- Généré le : dim. 05 juil. 2026 à 21:31
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -40,7 +40,12 @@ CREATE TABLE `amis` (
 --
 
 INSERT INTO `amis` (`id`, `demandeur_id`, `receveur_id`, `statut`, `date_creation`) VALUES
-(1, 5, 6, 'accepte', '2026-07-04 20:18:10');
+(1, 5, 6, 'accepte', '2026-07-04 20:18:10'),
+(2, 3, 6, 'en_attente', '2026-07-05 02:47:59'),
+(3, 7, 6, 'en_attente', '2026-07-05 03:16:44'),
+(4, 7, 5, 'accepte', '2026-07-05 03:16:46'),
+(5, 7, 4, 'en_attente', '2026-07-05 03:16:47'),
+(6, 7, 3, 'en_attente', '2026-07-05 03:16:49');
 
 -- --------------------------------------------------------
 
@@ -80,9 +85,15 @@ INSERT INTO `messages` (`id`, `expediteur_id`, `destinataire_id`, `contenu`, `im
 (1, 6, 5, 'cc', NULL, 1, '2026-07-04 23:12:38'),
 (2, 6, 5, NULL, 'img_6a49855e6f714.png', 1, '2026-07-04 23:12:46'),
 (3, 5, 6, NULL, 'img_6a498d49a53c5.png', 1, '2026-07-04 23:46:33'),
-(4, 6, 5, NULL, 'img_6a4998670b822.png', 0, '2026-07-05 00:33:59'),
-(5, 6, 5, 'Rengoku', NULL, 0, '2026-07-05 00:35:14'),
-(6, 6, 5, NULL, 'img_6a4998cec53a4.png', 0, '2026-07-05 00:35:42');
+(4, 6, 5, NULL, 'img_6a4998670b822.png', 1, '2026-07-05 00:33:59'),
+(5, 6, 5, 'Rengoku', NULL, 1, '2026-07-05 00:35:14'),
+(6, 6, 5, NULL, 'img_6a4998cec53a4.png', 1, '2026-07-05 00:35:42'),
+(7, 7, 5, 'salut', NULL, 1, '2026-07-05 03:18:16'),
+(8, 5, 7, 'CC', NULL, 1, '2026-07-05 03:18:53'),
+(9, 5, 7, 'comment tu vas ?', NULL, 1, '2026-07-05 03:19:01'),
+(10, 7, 5, 'Bien et toi ?', NULL, 1, '2026-07-05 03:19:16'),
+(11, 7, 5, 'connais tu ce perssonnages ?', NULL, 1, '2026-07-05 03:19:33'),
+(12, 7, 5, NULL, 'img_6a49bfa715068.webp', 1, '2026-07-05 03:21:27');
 
 -- --------------------------------------------------------
 
@@ -111,7 +122,8 @@ INSERT INTO `publications` (`id`, `auteur_id`, `contenu`, `image`, `date_creatio
 (6, 5, 'hi', 'img_6a498a3202e1f.png', '2026-07-04 23:33:22'),
 (7, 3, 'cc', NULL, '2026-07-05 01:10:12'),
 (8, 3, 'rengoku', NULL, '2026-07-05 01:10:44'),
-(9, 3, 'arcane', 'img_6a49a52aad7ed.jpeg', '2026-07-05 01:28:26');
+(9, 3, 'arcane', 'img_6a49a52aad7ed.jpeg', '2026-07-05 01:28:26'),
+(10, 7, 'Salut les amis ! Moi, c\'est Simon. J\'aime les animés. Vous reconnaissez sûrement ce personnage ?', 'img_6a49be37b6814.png', '2026-07-05 03:15:19');
 
 -- --------------------------------------------------------
 
@@ -134,7 +146,9 @@ CREATE TABLE `reactions` (
 INSERT INTO `reactions` (`id`, `publication_id`, `utilisateur_id`, `type`, `date_creation`) VALUES
 (1, 6, 6, 'like', '2026-07-04 23:56:40'),
 (2, 5, 6, 'like', '2026-07-04 23:56:44'),
-(3, 4, 6, 'like', '2026-07-04 23:56:45');
+(3, 4, 6, 'like', '2026-07-04 23:56:45'),
+(4, 10, 7, 'like', '2026-07-05 03:15:22'),
+(5, 10, 5, 'like', '2026-07-05 03:17:44');
 
 -- --------------------------------------------------------
 
@@ -168,8 +182,10 @@ INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `email`, `mot_de_passe`, `pho
 (2, 'Dupont', 'Marie', 'marie@reseau.com', '$2y$10$k5FFWhvEnljtakFN59iICuAJPb.IEz/MJDzFnUqZSSl9zh.puLz2y', NULL, 'Modératrice passionnée de lecture.', 'moderateur', '2026-07-04 19:01:22', NULL, NULL, NULL, NULL, NULL),
 (3, 'Martin', 'Lucas', 'lucas@reseau.com', '$2y$10$k5FFWhvEnljtakFN59iICuAJPb.IEz/MJDzFnUqZSSl9zh.puLz2y', NULL, 'Étudiant en informatique à ESGIS.', 'user', '2026-07-04 19:01:22', NULL, NULL, NULL, NULL, 'd1bfe0fb386692ca44efe37dbf5d2035fda1a7d388c17ce1a98d587136e51aea'),
 (4, 'Konan', 'Awa', 'awa@reseau.com', '$2y$10$k5FFWhvEnljtakFN59iICuAJPb.IEz/MJDzFnUqZSSl9zh.puLz2y', NULL, 'Passionnée de développement web.', 'user', '2026-07-04 19:01:22', NULL, NULL, NULL, NULL, NULL),
-(5, 'bob1', 'bob2', 'bob@email.com', '$2y$10$VFW4CZEKI52YNW.a9bcZf.LnsGM56533xPAI4VO/H.qj7v6j8xAua', NULL, NULL, 'user', '2026-07-04 19:16:05', NULL, NULL, 'a1943339280bbc9b6a69d0d2d2259352', '2026-07-05 02:03:39', NULL),
-(6, 'fire', 'firefox', 'fire@email.com', '$2y$10$gVTMHZ5HwWOnPLcN5IE6u.4fb3l9lL7taQMi6HDWodRlnhOP/fsQK', 'img_6a499694c13c5.png', '', 'user', '2026-07-04 20:17:59', NULL, NULL, NULL, NULL, NULL);
+(5, 'bob1', 'bob2', 'bob@email.com', '$2y$10$VFW4CZEKI52YNW.a9bcZf.LnsGM56533xPAI4VO/H.qj7v6j8xAua', NULL, NULL, 'user', '2026-07-04 19:16:05', NULL, NULL, '86865feb0d4197bf57887673064c72c5', '2026-07-05 20:41:23', '5487b6658b50f6e13a31b51180edca51aa578c9ef723d60d858301cbf1d7e7e3'),
+(6, 'fire', 'firefox', 'fire@email.com', '$2y$10$gVTMHZ5HwWOnPLcN5IE6u.4fb3l9lL7taQMi6HDWodRlnhOP/fsQK', 'img_6a499694c13c5.png', '', 'user', '2026-07-04 20:17:59', NULL, NULL, NULL, NULL, NULL),
+(7, 'Simon', 'Enock', 'simon@email.com', '$2y$10$hfQPzjYCuf24IM/jvJANNO0eu4yCGbU39r5ODtdGR.9bZ1FX8kkt.', 'img_6a49bdb8273b1.jpg', NULL, 'user', '2026-07-05 03:13:12', NULL, NULL, 'f43c7fa589ed02159dd26049be00bd4e', '2026-07-05 19:21:40', NULL),
+(8, 'Ducon', 'Bryan', 'brayan@email.com', '$2y$10$YxHbGSGnXnEPaen1jZRPlOnvmOpXOsrUXM5.YNusI5HIpNmC4RcDS', 'img_6a4aad8d50cfd.png', NULL, 'user', '2026-07-05 20:16:29', NULL, NULL, NULL, NULL, '4ac1458ecd5f2faf4ca7de42e558cd09718595f69650012f396125da338eebe2');
 
 --
 -- Index pour les tables déchargées
@@ -231,7 +247,7 @@ ALTER TABLE `utilisateurs`
 -- AUTO_INCREMENT pour la table `amis`
 --
 ALTER TABLE `amis`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `commentaires`
@@ -243,25 +259,25 @@ ALTER TABLE `commentaires`
 -- AUTO_INCREMENT pour la table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `publications`
 --
 ALTER TABLE `publications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT pour la table `reactions`
 --
 ALTER TABLE `reactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Contraintes pour les tables déchargées

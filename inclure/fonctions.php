@@ -111,7 +111,9 @@ function envoyer_email_html($destinataire, $sujet, $html) {
     $headers[] = 'Content-type: text/html; charset=UTF-8';
     $headers[] = 'From: no-reply@esgischat.local';
 
-    return mail($destinataire, $sujet, $html, implode("\r\n", $headers));
+    // Sur un environnement local comme XAMPP, le serveur SMTP n'est pas toujours configuré.
+    // On masque les warnings pour éviter de casser la réponse JSON du formulaire.
+    return @mail($destinataire, $sujet, $html, implode("\r\n", $headers));
 }
 
 // Réponse JSON standard pour les endpoints API

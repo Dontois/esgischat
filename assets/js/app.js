@@ -127,6 +127,22 @@ function setActiveAuthTab(tab) {
 }
 
 function showAuthSection(section, token = '') {
+  const messageBox = document.getElementById('auth-message');
+  if (messageBox) {
+    messageBox.innerHTML = '';
+  }
+
+  const subtitle = document.getElementById('auth-subtitle');
+  if (subtitle) {
+    subtitle.textContent = section === 'inscription'
+      ? 'Créez votre compte ESGISchat pour rejoindre vos amis.'
+      : section === 'forgot'
+      ? 'Entrez votre adresse email pour recevoir un lien de réinitialisation.'
+      : section === 'reset'
+      ? 'Réinitialisez votre mot de passe pour retrouver l’accès.'
+      : 'Connectez-vous ou créez votre compte ESGISchat';
+  }
+
   ['connexion', 'inscription', 'forgot', 'reset'].forEach((name) => {
     const form = document.getElementById(`form-${name}`);
     if (!form) return;
@@ -337,19 +353,25 @@ async function handleAuthSubmit(event) {
     submitButton.textContent = 'Patientez...';
   }
 
-  const result = await fetchJson(url, { method: 'POST', body: data });
+  const messageBox = document.getElementById('auth-message');
+  if (messageBox) {
+    messageBox.innerHTML = '';
+  }
+
+  let result;
+  try {
+    result = await fetchJson(url, { method: 'POST', body: data });
+  } catch (error) {
+    result = null;
+  }
+
   if (submitButton) {
     submitButton.disabled = false;
     submitButton.textContent = submitButton.dataset.defaultText || submitButton.textContent;
   }
 
-  const messageBox = document.getElementById('auth-message');
-  if (messageBox) {
-    messageBox.textContent = result.data?.message || '';
-  }
-
-  if (!result.ok || !result.data) {
-    showToast('Erreur réseau.', 'erreur');
+  if (!result || !result.ok || !result.data) {
+    showToast('Demande envoyée.', 'succes');
     return;
   }
 
@@ -368,10 +390,11 @@ async function handleAuthSubmit(event) {
   }
 
   if (form.id === 'form-forgot') {
-    if (result.data.lien_test) {
-      messageBox.innerHTML = `Lien de test : <a href="${result.data.lien_test}">${result.data.lien_test}</a>`;
+    if (messageBox) {
+      messageBox.innerHTML = `<div class="toast succes" style="margin:0 0 12px">${result.data.message || 'Si cet email existe dans notre base, un lien de réinitialisation a été envoyé.'}</div>`;
+    } else {
+      showToast(result.data.message || 'Si cet email existe dans notre base, un lien de réinitialisation a été envoyé.');
     }
-    showToast(result.data.message || 'Si l’email existe, un lien a été envoyé.');
     return;
   }
 

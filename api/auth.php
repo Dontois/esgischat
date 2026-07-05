@@ -126,7 +126,7 @@ if ($action === 'forgot') {
 
     reponse_json_api(true, [
         'message'   => "Si cet email existe dans notre base, un lien de réinitialisation a été envoyé.",
-        'lien_test' => $lien_test,
+        // 'lien_test' => $lien_test,
     ]);
 }
 
