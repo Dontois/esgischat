@@ -64,6 +64,9 @@ post_max_size = 15M
 
 
 ## Liste des membres du groupe
+- ALLOHOU Mirabelle
+- HOUNNOUPKE Ariane
+- ZANNOU Wilson
 - OKANLAWON Dontoi's
 
 
