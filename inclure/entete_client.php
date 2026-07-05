@@ -5,12 +5,15 @@
 // Définitions par défaut pour éviter les notices et les faux positifs de l'analyse statique
 $titre_page = $titre_page ?? '';
 $page_actuelle = $page_actuelle ?? '';
-$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? null);
+$utilisateur = $utilisateur ?? ($_SESSION['utilisateur'] ?? []);
 
 // Initiales pour l'avatar (sécurisé)
 $initiales = '';
-if (!empty($utilisateur['prenom'])) {
-  $initiales = mb_substr($utilisateur['prenom'], 0, 1) . mb_substr($utilisateur['nom'] ?? '', 0, 1);
+// Coerce les champs en string avant d'appeler mb_substr pour satisfaire l'analyseur de type
+$prenom = (string)($utilisateur['prenom'] ?? '');
+$nom = (string)($utilisateur['nom'] ?? '');
+if ($prenom !== '') {
+  $initiales = mb_substr($prenom, 0, 1) . mb_substr($nom, 0, 1);
 }
 ?>
 <!DOCTYPE html>
