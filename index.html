@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESGISchat</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+<div id="zone-toast"></div>
+
+<!-- Écran authentification -->
+<div id="auth-screen" class="page-auth caché">
+  <div class="auth-gauche">
+    <div class="auth-logo-grand">ESGISchat</div>
+    <p class="auth-tagline">La plateforme de communication des étudiants ESGIS. Connectez, partagez, échangez.</p>
+    <div class="auth-points">
+      <div class="auth-point"><div class="auth-point-icone"><i class="ph ph-chat-circle-dots" aria-hidden="true"></i></div> Discutez avec vos amis</div>
+      <div class="auth-point"><div class="auth-point-icone"><i class="ph ph-newspaper" aria-hidden="true"></i></div> Partagez vos publications et actualités</div>
+      <div class="auth-point"><div class="auth-point-icone"><i class="ph ph-buildings" aria-hidden="true"></i></div> Construisez votre réseau étudiant</div>
+    </div>
+  </div>
+
+  <div class="auth-droite">
+    <div class="auth-boite" id="auth-box">
+      <h1 class="auth-titre">Bienvenue <i class="ph ph-sparkle" aria-hidden="true"></i></h1>
+      <p class="auth-sous-titre" id="auth-subtitle">Connectez-vous ou créez votre compte ESGISchat</p>
+      <div id="auth-message"></div>
+
+      <div id="auth-tabs" class="auth-onglets">
+        <button type="button" class="auth-onglet actif" data-auth-tab="login">Connexion</button>
+        <button type="button" class="auth-onglet" data-auth-tab="inscription">Inscription</button>
+      </div>
+
+      <form id="form-connexion" class="auth-form">
+        <div class="groupe-champ">
+          <label class="champ-label">EMAIL</label>
+          <input type="email" name="email" class="champ" placeholder="votre@email.com" required>
+        </div>
+        <div class="groupe-champ">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="champ-label" style="margin:0">MOT DE PASSE</label>
+            <a href="#/forgot" id="link-forgot">Oublié ?</a>
+          </div>
+          <input type="password" name="mot_de_passe" class="champ" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primaire" style="width:100%;margin-top:8px;padding:13px">Se connecter</button>
+      </form>
+
+      <form id="form-inscription" class="auth-form caché" enctype="multipart/form-data">
+        <div class="grille-2">
+          <div class="groupe-champ">
+            <label class="champ-label">PRÉNOM</label>
+            <input type="text" name="prenom" class="champ" placeholder="Marie" required>
+          </div>
+          <div class="groupe-champ">
+            <label class="champ-label">NOM</label>
+            <input type="text" name="nom" class="champ" placeholder="Dupont" required>
+          </div>
+        </div>
+        <div class="groupe-champ">
+          <label class="champ-label">EMAIL</label>
+          <input type="email" name="email" class="champ" placeholder="votre@email.com" required>
+        </div>
+        <div class="groupe-champ">
+          <label class="champ-label">MOT DE PASSE</label>
+          <input type="password" name="mot_de_passe" class="champ" placeholder="Min. 6 caractères" required>
+        </div>
+        <div class="groupe-champ">
+          <label class="champ-label">CONFIRMER LE MOT DE PASSE</label>
+          <input type="password" name="confirm_mdp" class="champ" placeholder="••••••••" required>
+        </div>
+        <div class="groupe-champ">
+          <label class="champ-label">PHOTO DE PROFIL (optionnel)</label>
+          <input type="file" name="photo_profil" class="champ" accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-primaire" style="width:100%;padding:13px">Créer mon compte</button>
+      </form>
+
+      <form id="form-forgot" class="auth-form caché">
+        <p style="color:var(--texte-2);font-size:14px;margin-bottom:16px">Entrez votre adresse email pour recevoir un lien de réinitialisation.</p>
+        <div class="groupe-champ">
+          <label class="champ-label">VOTRE EMAIL</label>
+          <input type="email" name="email" class="champ" placeholder="votre@email.com" required>
+        </div>
+        <button type="submit" class="btn btn-primaire" style="width:100%;padding:13px">Envoyer le lien</button>
+        <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--texte-3)">
+          <a href="#/login" data-auth-nav="login">← Retour à la connexion</a>
+        </p>
+      </form>
+
+      <form id="form-reset" class="auth-form caché">
+        <input type="hidden" name="token" id="reset-token">
+        <div class="groupe-champ">
+          <label class="champ-label">NOUVEAU MOT DE PASSE</label>
+          <input type="password" name="mot_de_passe" class="champ" placeholder="Min. 6 caractères" required>
+        </div>
+        <div class="groupe-champ">
+          <label class="champ-label">CONFIRMER</label>
+          <input type="password" name="confirm_mdp" class="champ" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primaire" style="width:100%;padding:13px">Réinitialiser</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Application connectée -->
+<div id="app-shell" class="app-layout caché">
+  <header class="topbar">
+    <button class="topbar-burger" type="button" aria-label="Ouvrir le menu"><i class="ph ph-list" aria-hidden="true"></i></button>
+    <div class="topbar-logo">ESGISchat</div>
+    <nav class="topbar-actions">
+      <a class="topbar-profil" href="#/profil" data-nav="profil" id="topbar-profil-link">
+        <span id="topbar-avatar"></span>
+        <span class="topbar-profil-nom" id="topbar-name"></span>
+      </a>
+      <button type="button" class="topbar-btn-icone" id="btn-logout" title="Se déconnecter"><i class="ph ph-sign-out" aria-hidden="true"></i></button>
+    </nav>
+  </header>
+
+  <aside class="sidebar" id="sidebar-mobile">
+    <span class="sidebar-titre">Menu</span>
+    <a class="nav-item" href="#/accueil" data-nav="accueil"><span class="nav-icone"><i class="ph ph-house" aria-hidden="true"></i></span> Accueil</a>
+    <a class="nav-item" href="#/amis" data-nav="amis"><span class="nav-icone"><i class="ph ph-users" aria-hidden="true"></i></span> Amis</a>
+    <a class="nav-item" href="#/chat" data-nav="chat"><span class="nav-icone"><i class="ph ph-chat-circle-dots" aria-hidden="true"></i></span> Messages</a>
+    <a class="nav-item" href="#/profil" data-nav="profil"><span class="nav-icone"><i class="ph ph-user-circle" aria-hidden="true"></i></span> Mon profil</a>
+    <div style="flex:1"></div>
+    <button type="button" class="nav-item" id="sidebar-logout" style="color:var(--danger);background:none;border:none;width:100%;cursor:pointer">
+      <span class="nav-icone"><i class="ph ph-sign-out" aria-hidden="true"></i></span> Déconnexion
+    </button>
+  </aside>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <main class="contenu-central" id="app-content"></main>
+</div>
+
+<script src="assets/js/app.js" defer></script>
+<script src="assets/js/chat-live.js" defer></script>
+<script src="assets/js/mobile-nav.js" defer></script>
+</body>
+</html>
